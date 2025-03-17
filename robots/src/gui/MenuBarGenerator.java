@@ -2,6 +2,8 @@ package gui;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+
 import log.Logger;
 
 public class MenuBarGenerator {
@@ -67,30 +69,12 @@ public class MenuBarGenerator {
         JMenu fileMenu = new JMenu("Файл");
         fileMenu.setMnemonic(KeyEvent.VK_F);
         JMenuItem exitItem = new JMenuItem("Выход", KeyEvent.VK_X);
-        exitItem.addActionListener((event) -> confirmExit());
+        exitItem.addActionListener((event) -> {
+            mainFrame.dispatchEvent(new WindowEvent(mainFrame, WindowEvent.WINDOW_CLOSING));});
         fileMenu.add(exitItem);
 
         return fileMenu;
     }
-
-    void confirmExit() {
-        UIManager.put("OptionPane.yesButtonText", "Да");
-        UIManager.put("OptionPane.noButtonText", "Нет");
-
-        int result = JOptionPane.showConfirmDialog(
-                mainFrame,
-                "Вы уверены, что хотите выйти?",
-                "Подтверждение выхода",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-
-        if (result == JOptionPane.YES_OPTION) {
-            mainFrame.dispose();
-            System.exit(1);
-        }
-    }
-
 
     private void setLookAndFeel(String className) {
         try {
