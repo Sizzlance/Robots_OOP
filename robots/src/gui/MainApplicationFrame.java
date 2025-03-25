@@ -4,12 +4,16 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 
 import log.Logger;
 
 public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private LogWindow logWindow;
+    private GameWindow gameWindow;
 
     public MainApplicationFrame() {
         //Make the big window be indented 50 pixels from each edge
@@ -22,11 +26,10 @@ public class MainApplicationFrame extends JFrame {
 
         setContentPane(desktopPane);
 
-        LogWindow logWindow = createLogWindow();
+        logWindow = createLogWindow();
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400, 400);
+        gameWindow = createGameWindow();
         addWindow(gameWindow);
 
         MenuBarGenerator menuBarGenerator = new MenuBarGenerator(this);
@@ -41,10 +44,9 @@ public class MainApplicationFrame extends JFrame {
         });
     }
 
-    void confirmExit() {
+    void confirmExit(){
         UIManager.put("OptionPane.yesButtonText", "Да");
         UIManager.put("OptionPane.noButtonText", "Нет");
-
         int result = JOptionPane.showConfirmDialog(
                 this,
                 "Вы уверены, что хотите выйти?",
@@ -54,18 +56,25 @@ public class MainApplicationFrame extends JFrame {
         );
 
         if (result == JOptionPane.YES_OPTION) {
+            Map<String, Integer> windowData = new HashMap<>();
+            gameWindow.setPosition(windowData);
+            logWindow.setPosition(windowData);
+            logWindow.saveWindowData(windowData);
             System.exit(0);
         }
     }
 
     protected LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10, 10);
-        logWindow.setSize(300, 800);
-        setMinimumSize(logWindow.getSize());
-        logWindow.pack();
+        logWindow.loadWindowData();
         Logger.debug("Протокол работает");
         return logWindow;
+    }
+
+    protected GameWindow createGameWindow() {
+        GameWindow gameWindow = new GameWindow();
+        gameWindow.loadWindowData();
+        return gameWindow;
     }
 
     protected void addWindow(JInternalFrame frame) {
