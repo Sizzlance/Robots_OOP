@@ -14,8 +14,9 @@ import log.Logger;
 public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final WindowStateManager stateManager = new WindowStateManager();
-    private LogWindow logWindow;
-    private GameWindow gameWindow;
+    private final LogWindow logWindow;
+    private final GameWindow gameWindow;
+    private final CoordinatesWindow coordinatesWindow;
 
     public MainApplicationFrame() {
         //Make the big window be indented 50 pixels from each edge
@@ -28,15 +29,18 @@ public class MainApplicationFrame extends JFrame {
 
         setContentPane(desktopPane);
 
+        coordinatesWindow = createCoordinatesWindow();
+        gameWindow = createGameWindow();
+        logWindow = createLogWindow();
+
         Map<String, Window.WindowState> savedStates = loadWindowStates();
 
-        logWindow = createLogWindow();
         applyWindowState(logWindow, savedStates);
         addWindow(logWindow);
-
-        gameWindow = createGameWindow();
         applyWindowState(gameWindow, savedStates);
         addWindow(gameWindow);
+        applyWindowState(coordinatesWindow, savedStates);
+        addWindow(coordinatesWindow);
 
         MenuBarGenerator menuBarGenerator = new MenuBarGenerator(this);
         setJMenuBar(menuBarGenerator.generateMenuBar());
@@ -44,13 +48,13 @@ public class MainApplicationFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e){
+            public void windowClosing(WindowEvent e) {
                 confirmExit();
             }
         });
     }
 
-    void confirmExit(){
+    void confirmExit() {
         UIManager.put("OptionPane.yesButtonText", "Да");
         UIManager.put("OptionPane.noButtonText", "Нет");
         int result = JOptionPane.showConfirmDialog(
@@ -87,6 +91,7 @@ public class MainApplicationFrame extends JFrame {
         Map<String, Window.WindowState> states = new HashMap<>();
         states.put(logWindow.getWindowName(), logWindow.getWindowState());
         states.put(gameWindow.getWindowName(), gameWindow.getWindowState());
+        states.put(coordinatesWindow.getWindowName(), coordinatesWindow.getWindowState());
 
         try {
             stateManager.saveWindowStates(states);
@@ -103,7 +108,13 @@ public class MainApplicationFrame extends JFrame {
 
     protected GameWindow createGameWindow() {
         GameWindow gameWindow = new GameWindow();
+        RobotModel model = gameWindow.getVisualizer().getRobotModel();
+        coordinatesWindow.setRobotModel(model);
         return gameWindow;
+    }
+
+    protected CoordinatesWindow createCoordinatesWindow() {
+        return new CoordinatesWindow();
     }
 
     protected void addWindow(JInternalFrame frame) {
