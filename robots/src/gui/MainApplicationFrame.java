@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
@@ -12,6 +13,7 @@ import log.Logger;
 
 public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private final WindowStateManager stateManager = new WindowStateManager();
     private LogWindow logWindow;
     private GameWindow gameWindow;
 
@@ -26,10 +28,14 @@ public class MainApplicationFrame extends JFrame {
 
         setContentPane(desktopPane);
 
+        Map<String, Window.WindowState> savedStates = loadWindowStates();
+
         logWindow = createLogWindow();
+        applyWindowState(logWindow, savedStates);
         addWindow(logWindow);
 
         gameWindow = createGameWindow();
+        applyWindowState(gameWindow, savedStates);
         addWindow(gameWindow);
 
         MenuBarGenerator menuBarGenerator = new MenuBarGenerator(this);
@@ -56,24 +62,47 @@ public class MainApplicationFrame extends JFrame {
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            Map<String, Integer> windowData = new HashMap<>();
-            gameWindow.setPosition(windowData);
-            logWindow.setPosition(windowData);
-            logWindow.saveWindowData(windowData);
+            saveWindowStates();
             System.exit(0);
+        }
+    }
+
+    private Map<String, Window.WindowState> loadWindowStates() {
+        try {
+            return stateManager.loadWindowStates();
+        } catch (IOException e) {
+            Logger.error("Ошибка загрузки состояний окон: " + e.getMessage());
+            return new HashMap<>();
+        }
+    }
+
+    private void applyWindowState(Window window, Map<String, Window.WindowState> states) {
+        Window.WindowState state = states.get(window.getWindowName());
+        if (state != null) {
+            window.applyWindowState(state);
+        }
+    }
+
+    private void saveWindowStates() {
+        Map<String, Window.WindowState> states = new HashMap<>();
+        states.put(logWindow.getWindowName(), logWindow.getWindowState());
+        states.put(gameWindow.getWindowName(), gameWindow.getWindowState());
+
+        try {
+            stateManager.saveWindowStates(states);
+        } catch (IOException e) {
+            Logger.error("Ошибка сохранения состояний окон: " + e.getMessage());
         }
     }
 
     protected LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.loadWindowData();
         Logger.debug("Протокол работает");
         return logWindow;
     }
 
     protected GameWindow createGameWindow() {
         GameWindow gameWindow = new GameWindow();
-        gameWindow.loadWindowData();
         return gameWindow;
     }
 
