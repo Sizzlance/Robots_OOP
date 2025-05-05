@@ -1,4 +1,4 @@
-package gui;
+package gui.robot;
 
 import java.util.Observable;
 import java.util.Timer;
@@ -77,8 +77,9 @@ public class RobotModel extends Observable {
         }
 
         moveRobot(maxVelocity, angularVelocity, 10);
+        double[] position = {m_robotPositionX, m_robotPositionY, m_robotDirection};
         setChanged();
-        notifyObservers("robotPosition");
+        notifyObservers(position);
     }
 
     private void moveRobot(double velocity, double angularVelocity, double duration) {

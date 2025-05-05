@@ -1,22 +1,21 @@
-package gui;
+package gui.windows.mainWindow;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import javax.swing.*;
 
+import gui.windows.*;
 import log.Logger;
 
 public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final WindowStateManager stateManager = new WindowStateManager();
-    private final LogWindow logWindow;
-    private final GameWindow gameWindow;
-    private final CoordinatesWindow coordinatesWindow;
+    private final List<Window> windows = new ArrayList<>();
+
 
     public MainApplicationFrame() {
         //Make the big window be indented 50 pixels from each edge
@@ -29,18 +28,20 @@ public class MainApplicationFrame extends JFrame {
 
         setContentPane(desktopPane);
 
-        coordinatesWindow = createCoordinatesWindow();
-        gameWindow = createGameWindow();
-        logWindow = createLogWindow();
+        windows.add(createCoordinatesWindow());
+        windows.add(createGameWindow());
+        windows.add(createLogWindow());
 
         Map<String, Window.WindowState> savedStates = loadWindowStates();
 
-        applyWindowState(logWindow, savedStates);
-        addWindow(logWindow);
-        applyWindowState(gameWindow, savedStates);
-        addWindow(gameWindow);
-        applyWindowState(coordinatesWindow, savedStates);
-        addWindow(coordinatesWindow);
+        for (Window window : windows) {
+            applyWindowState(window, savedStates);
+            addWindow(window);
+        }
+
+        if (windows.get(0) instanceof CoordinatesWindow coordinatesWindow && windows.get(1) instanceof GameWindow gameWindow) {
+            coordinatesWindow.setRobotModel(gameWindow.getVisualizer().getRobotModel());
+        }
 
         MenuBarGenerator menuBarGenerator = new MenuBarGenerator(this);
         setJMenuBar(menuBarGenerator.generateMenuBar());
@@ -89,9 +90,10 @@ public class MainApplicationFrame extends JFrame {
 
     private void saveWindowStates() {
         Map<String, Window.WindowState> states = new HashMap<>();
-        states.put(logWindow.getWindowName(), logWindow.getWindowState());
-        states.put(gameWindow.getWindowName(), gameWindow.getWindowState());
-        states.put(coordinatesWindow.getWindowName(), coordinatesWindow.getWindowState());
+
+        for (Window window : windows) {
+            states.put(window.getWindowName(), window.getWindowState());
+        }
 
         try {
             stateManager.saveWindowStates(states);
@@ -107,10 +109,7 @@ public class MainApplicationFrame extends JFrame {
     }
 
     protected GameWindow createGameWindow() {
-        GameWindow gameWindow = new GameWindow();
-        RobotModel model = gameWindow.getVisualizer().getRobotModel();
-        coordinatesWindow.setRobotModel(model);
-        return gameWindow;
+        return new GameWindow();
     }
 
     protected CoordinatesWindow createCoordinatesWindow() {

@@ -1,4 +1,6 @@
-package gui;
+package gui.windows;
+
+import gui.robot.RobotModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,20 +27,19 @@ public class CoordinatesWindow extends Window implements Observer {
         this.robotModel = model;
         if (this.robotModel != null) {
             this.robotModel.addObserver(this);
-            updateCoordinates();
-        }
-    }
-
-    private void updateCoordinates() {
-        if (robotModel != null) {
-            coordinatesLabel.setText(String.format("X: %.1f, Y: %.1f",
-                    robotModel.getRobotPositionX(),
-                    robotModel.getRobotPositionY()));
+            if (robotModel != null) {
+                coordinatesLabel.setText(String.format("X: %.1f, Y: %.1f",
+                        robotModel.getRobotPositionX(),
+                        robotModel.getRobotPositionY()));
+            }
         }
     }
 
     @Override
     public void update(Observable o, Object arg) {
-        updateCoordinates();
+        if (arg instanceof double[] position) {
+            coordinatesLabel.setText(String.format("X: %.1f, Y: %.1f",
+                    position[0], position[1]));
+        }
     }
 }

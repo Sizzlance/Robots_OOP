@@ -1,4 +1,6 @@
-package gui;
+package gui.windows;
+
+import gui.robot.GameVisualizer;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
