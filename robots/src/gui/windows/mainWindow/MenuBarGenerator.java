@@ -1,4 +1,4 @@
-package gui;
+package gui.windows.mainWindow;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

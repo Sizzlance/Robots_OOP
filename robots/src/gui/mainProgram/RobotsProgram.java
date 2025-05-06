@@ -1,4 +1,6 @@
-package gui;
+package gui.mainProgram;
+
+import gui.windows.mainWindow.MainApplicationFrame;
 
 import java.awt.Frame;
 import java.util.Locale;

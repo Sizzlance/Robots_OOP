@@ -1,4 +1,4 @@
-package gui;
+package gui.windows;
 
 import java.awt.*;
 import javax.swing.JInternalFrame;
